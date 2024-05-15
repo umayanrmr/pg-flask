@@ -48,15 +48,13 @@ class Store(MethodView):
     
 
     @blp.arguments(StoreUpdateSchema)
-    @responseHandler
+    @blp.response(200, StoreSchema)
     def put(self, request_data, id):
-        request_data = request.get_json()
-        match = stores[id]
-        print(match)
-        # i just manual set the name and price so we dont accidentally update the id
-        # |= just like the mapper in c#, it will only update the values existing in the right side
-        match |= { "name": request_data["name"] }
-        return match
+        item = StoreModel.query.get_or_404(id)
+        item.name = request_data["name"]
+        db.session.add(item)
+        db.session.commit()
+        return item
 
 
 @blp.route("/stores/<int:id>/items")

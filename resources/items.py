@@ -45,10 +45,12 @@ class Item(MethodView):
         return True
     
     @blp.arguments(ItemUpdateSchema)
-    @responseHandler
+    @blp.response(200, ItemSchema)
     def put(self, request_data, id):
-        match = items[id]
-        # i just manual set the name and price so we dont accidentally update the id
-        match |= { "name": request_data["name"], "price": request_data["price"] }
-        return match
+        item = ItemModel.query.get_or_404(id)
+        item.name = request_data["name"]
+        item.price = request_data["price"]
+        db.session.add(item)
+        db.session.commit()
+        return item
 
