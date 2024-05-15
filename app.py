@@ -1,5 +1,5 @@
 from flask import Flask, request
-from db import items, stores, getStore
+from db import items, stores
 from helpers import responseHandler
 
 # variable name must be the same as the filename. which is app.py
@@ -8,17 +8,17 @@ app = Flask(__name__)
 @app.get("/stores")
 @responseHandler
 def get_stores(): 
-    return stores
+    return list(stores.values())
 
 
 @app.post("/stores")
 @responseHandler
 def create_store():
     request_data = request.get_json()
-    new_store = {"name": request_data["name"], "items": []}
     id = len(stores) + 1 
-    stores[id] = new_store
-    return new_store
+    new_item = {**request_data, "id": id }
+    stores[id] = new_item
+    return new_item
 
 
 @app.get("/stores/<int:id>")
@@ -28,18 +28,29 @@ def get_store(id):
     return store
 
 
-@app.post("/stores/<int:id>/items")
+@app.post("/items")
 @responseHandler
-def create_item(id):
+def create_item():
     request_data = request.get_json()
-    new_item = {"name": request_data["name"], "price": request_data["price"]}
-    store = stores[id]
-    store["items"].append(new_item)
+
+    if(request_data["store_id"] not in stores):
+        raise KeyError()
+    
+    id = len(items) + 1 
+    new_item = {**request_data, "id": id}
+    items[id] = new_item
     return new_item
+
+
+@app.get("/items/<int:id>")
+@responseHandler
+def get_item(id): 
+    item = items[id]
+    return item
 
 
 @app.get("/stores/<int:id>/items")
 @responseHandler
 def get_store_items(id): 
-    store = stores[id]
-    return store["items"]
+    print(items.values())
+    return [item for item in items.values() if item['store_id'] == id]
