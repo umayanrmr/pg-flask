@@ -3,6 +3,10 @@ from marshmallow import Schema, fields
 
 
 
+class TagPlainSchema(Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str(required=True)
+
 class ItemPlainSchema(Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str(required=True)
@@ -24,6 +28,7 @@ class StoreUpdateSchema(Schema):
 class ItemSchema(ItemPlainSchema):
     store_id = fields.Int(required=True)
     store = fields.Nested(StorePlainSchema(), dump_only=True)
+    store = fields.Nested(TagPlainSchema(), dump_only=True)
 
 
 class ItemUpdateSchema(Schema):
@@ -32,3 +37,8 @@ class ItemUpdateSchema(Schema):
 
 
 
+
+
+class TagSchema(TagPlainSchema):
+    store_id = fields.Int(required=True)
+    store = fields.Nested(StorePlainSchema(), dump_only=True)

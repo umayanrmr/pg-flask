@@ -7,6 +7,7 @@ import models
 
 from resources.items import blp as ItemBlueprint
 from resources.store import blp as StoreBlueprint
+from resources.tags import blp as TagsBlueprint
 
 # variable name must be the same as the filename. which is app.py
 
@@ -36,5 +37,6 @@ def create_app(db_url=None):
    
     api.register_blueprint(ItemBlueprint)
     api.register_blueprint(StoreBlueprint)
+    api.register_blueprint(TagsBlueprint)
 
     return app

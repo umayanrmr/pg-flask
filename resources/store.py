@@ -9,7 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 
 # flask_smorest Blueprint is used to divide API into multiple segments
-blp = Blueprint("stores", __name__, description="Stores API")
+blp = Blueprint("Stores", "stores", __name__, description="Stores API")
 
 
 

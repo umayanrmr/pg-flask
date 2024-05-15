@@ -7,7 +7,7 @@ from db import db
 from sqlalchemy.exc import SQLAlchemyError
 
 # flask_smorest Blueprint is used to divide API into multiple segments
-blp = Blueprint("items", __name__, description="Items API")
+blp = Blueprint("Items", "items", __name__, description="Items API")
 
 
 
