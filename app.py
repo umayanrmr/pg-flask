@@ -20,12 +20,38 @@ def create_store():
     stores[id] = new_item
     return new_item
 
+@app.put("/stores/<int:id>")
+@responseHandler
+def update_store(id):
+    request_data = request.get_json()
+    match = stores[id]
+    print(match)
+    # i just manual set the name and price so we dont accidentally update the id
+    match |= { "name": request_data["name"] }
+    return match
+
 
 @app.get("/stores/<int:id>")
 @responseHandler
 def get_store(id): 
     store = stores[id]
     return store
+
+
+@app.delete("/stores/<int:id>")
+@responseHandler
+def delete_store(id): 
+    del stores[id]
+    return True
+
+
+
+@app.get("/stores/<int:id>/items")
+@responseHandler
+def get_store_items(id): 
+    print(items.values())
+    return [item for item in items.values() if item['store_id'] == id]
+
 
 
 @app.post("/items")
@@ -42,6 +68,19 @@ def create_item():
     return new_item
 
 
+
+@app.get("/items")
+@responseHandler
+def get_items(): 
+    return list(items.values())
+
+
+@app.delete("/items/<int:id>")
+@responseHandler
+def delete_item(id): 
+    del items[id]
+    return True
+
 @app.get("/items/<int:id>")
 @responseHandler
 def get_item(id): 
@@ -49,8 +88,12 @@ def get_item(id):
     return item
 
 
-@app.get("/stores/<int:id>/items")
+@app.put("/items/<int:id>")
 @responseHandler
-def get_store_items(id): 
-    print(items.values())
-    return [item for item in items.values() if item['store_id'] == id]
+def update_item(id):
+    request_data = request.get_json()
+    match = items[id]
+    # i just manual set the name and price so we dont accidentally update the id
+    match |= { "name": request_data["name"], "price": request_data["price"] }
+    return match
+
