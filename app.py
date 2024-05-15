@@ -14,7 +14,7 @@ def searchStore(items, name):
 
 stores = [
     {
-        "name": "My Store",
+        "name": "My Store 1",
         "items": [
             {
                 "name": "Chair",
