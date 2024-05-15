@@ -1,7 +1,6 @@
 from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from helpers import responseHandler
 from models.item import ItemModel
 from schemas import ItemSchema, ItemUpdateSchema
 from db import db
@@ -38,11 +37,12 @@ class Item(MethodView):
     def get(self, id):
         item = ItemModel.query.get_or_404(id)
         return item
-
-    @responseHandler
+    
     def delete(self, id):
-        del items[id]
-        return True
+        item = ItemModel.query.get_or_404(id)
+        db.session.delete(item)
+        db.session.commit()
+        return {"message": "Item Deleted."}, 200
     
     @blp.arguments(ItemUpdateSchema)
     @blp.response(200, ItemSchema)

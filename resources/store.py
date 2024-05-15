@@ -1,7 +1,6 @@
 from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from helpers import responseHandler
 from models.item import ItemModel
 from models.store import StoreModel
 from schemas import ItemSchema, StoreSchema, StoreUpdateSchema
@@ -41,13 +40,12 @@ class Store(MethodView):
         item = StoreModel.query.get_or_404(id)
         return item
 
-    @responseHandler
     def delete(self, id):
         item = StoreModel.query.get_or_404(id)
-        raise NotImplementedError("")
-        return True
+        db.session.delete(item)
+        db.session.commit()
+        return {"message": "Item Deleted."}, 200
     
-
     @blp.arguments(StoreUpdateSchema)
     @blp.response(200, StoreSchema)
     def put(self, request_data, id):
