@@ -2,6 +2,7 @@ from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from helpers import responseHandler
+from models.item import ItemModel
 from models.store import StoreModel
 from schemas import ItemSchema, StoreSchema, StoreUpdateSchema
 from db import db
@@ -15,9 +16,9 @@ blp = Blueprint("stores", __name__, description="Stores API")
 
 @blp.route("/stores")
 class StoreList(MethodView):
-    @responseHandler
+    @blp.response(200, StoreSchema(many=True))
     def get(self):
-         return list(stores.values())
+         return StoreModel.query.all()
 
     @blp.arguments(StoreSchema)
     @blp.response(201, ItemSchema)
@@ -59,7 +60,6 @@ class Store(MethodView):
 
 @blp.route("/stores/<int:id>/items")
 class StoreItems(MethodView):
-    @responseHandler
+    @blp.response(200, ItemSchema(many=True))
     def get(self, id):
-        print(items.values())
-        return [item for item in items.values() if item['store_id'] == id]
+        return ItemModel.query.filter(ItemModel.store_id == id).all()
