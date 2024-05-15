@@ -28,7 +28,7 @@ class StoreUpdateSchema(Schema):
 class ItemSchema(ItemPlainSchema):
     store_id = fields.Int(required=True)
     store = fields.Nested(StorePlainSchema(), dump_only=True)
-    store = fields.Nested(TagPlainSchema(), dump_only=True)
+    tags = fields.List(fields.Nested(TagPlainSchema()) , dump_only=True)
 
 
 class ItemUpdateSchema(Schema):
@@ -42,3 +42,11 @@ class ItemUpdateSchema(Schema):
 class TagSchema(TagPlainSchema):
     store_id = fields.Int(required=True)
     store = fields.Nested(StorePlainSchema(), dump_only=True)
+    items = fields.List(fields.Nested(ItemPlainSchema()) , dump_only=True)
+
+
+
+class TagItemSchema(Schema):
+    message = fields.Str()
+    item = fields.Nested(ItemSchema)
+    tag = fields.Nested(TagSchema)

@@ -4,7 +4,7 @@ from flask_smorest import Blueprint, abort
 from models.item import ItemModel
 from models.store import StoreModel
 from models.tag import TagModel
-from schemas import ItemSchema, StoreSchema, StoreUpdateSchema, TagSchema
+from schemas import ItemSchema, StoreSchema, StoreUpdateSchema, TagItemSchema, TagSchema
 from db import db
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
@@ -20,6 +20,16 @@ class Tag(MethodView):
     @blp.response(200, TagSchema)
     def get(self, id):
          return TagModel.query.get_or_404(id)
+    
+    def delete(self, id):
+        item = TagModel.query.get_or_404(id)
+
+        if not item.items:
+            db.session.delete(item)
+            db.session.commit()
+            return {"message": "Item Deleted."}, 200
+    
+        abort(400, message="Could not delete tag, make sure tag is not associated with any items.")
 
   
 
@@ -43,4 +53,32 @@ class StoreTags(MethodView):
         except SQLAlchemyError as e: 
             abort(500, str(e))
         return item
+
+
+
+
+@blp.route("/items/<int:id>/tags/<int:tag_id>")
+class LinkTagToItem(MethodView):
+    @blp.response(201, TagSchema)
+    def post(self, id, tag_id):
+        item = ItemModel.query.get_or_404(id)
+        tag = TagModel.query.get_or_404(tag_id)
+        item.tags.append(tag)
+        try:
+            db.session.add(item)
+            db.session.commit()
+        except SQLAlchemyError as e: 
+            abort(500, message="An error occured while inserting the tag.")
+        return item
     
+    @blp.response(200, TagItemSchema)
+    def delete(self, id, tag_id):
+        item = ItemModel.query.get_or_404(id)
+        tag = TagModel.query.get_or_404(tag_id)
+        item.tags.remove(tag)
+        try:
+            db.session.add(item)
+            db.session.commit()
+        except SQLAlchemyError as e: 
+            abort(500, message="An error occured while inserting the tag.")
+        return {"message": "Item removed from tag", "item": item, "tag": tag}
