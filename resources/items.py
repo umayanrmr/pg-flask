@@ -19,22 +19,24 @@ class ItemList(MethodView):
          return list(items.values())
 
     @blp.arguments(ItemSchema)
-    @responseHandler
     @blp.response(201, ItemSchema)
     def post(self, request_data):
-        item = ItemModel(**request_data) 
-        db.session.add(item)
-        db.session.commit()
+        item = ItemModel(**request_data)
+        try:
+            db.session.add(item)
+            db.session.commit()
+        except SQLAlchemyError: 
+            abort(500, message="An error occured while inserting the item")
+        
         return item
-    
     
 
 @blp.route("/items/<int:id>")
 class Item(MethodView):
 
-    @responseHandler
+    @blp.response(200,ItemSchema)
     def get(self, id):
-        item = items[id]
+        item = ItemModel.query.get_or_404(id)
         return item
 
     @responseHandler

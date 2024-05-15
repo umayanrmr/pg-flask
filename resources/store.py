@@ -34,16 +34,16 @@ class StoreList(MethodView):
     
 
 @blp.route("/stores/<int:id>")
-
 class Store(MethodView):
-    @responseHandler
+    @blp.response(200, StoreSchema)
     def get(self, id):
-        store = stores[id]
-        return store
+        item = StoreModel.query.get_or_404(id)
+        return item
 
     @responseHandler
     def delete(self, id):
-        del stores[id]
+        item = StoreModel.query.get_or_404(id)
+        raise NotImplementedError("")
         return True
     
 
