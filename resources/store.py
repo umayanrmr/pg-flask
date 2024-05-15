@@ -2,7 +2,10 @@ from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from helpers import responseHandler
-from schemas import StoreSchema, StoreUpdateSchema
+from models.store import StoreModel
+from schemas import ItemSchema, StoreSchema, StoreUpdateSchema
+from db import db
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 
 # flask_smorest Blueprint is used to divide API into multiple segments
@@ -17,12 +20,17 @@ class StoreList(MethodView):
          return list(stores.values())
 
     @blp.arguments(StoreSchema)
-    @responseHandler
+    @blp.response(201, ItemSchema)
     def post(self, request_data):
-        id = len(stores) + 1 
-        new_item = {**request_data, "id": id }
-        stores[id] = new_item
-        return new_item
+        item = StoreModel(**request_data)
+        try:
+            db.session.add(item)
+            db.session.commit()
+        except IntegrityError:
+            abort(400, message="Store name already exists.")
+        except SQLAlchemyError: 
+            abort(500, message="An error occured while inserting the item")
+        return item
     
 
 @blp.route("/stores/<int:id>")

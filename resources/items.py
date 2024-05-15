@@ -2,8 +2,10 @@ from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from helpers import responseHandler
+from models.item import ItemModel
 from schemas import ItemSchema, ItemUpdateSchema
-
+from db import db
+from sqlalchemy.exc import SQLAlchemyError
 
 # flask_smorest Blueprint is used to divide API into multiple segments
 blp = Blueprint("items", __name__, description="Items API")
@@ -18,17 +20,14 @@ class ItemList(MethodView):
 
     @blp.arguments(ItemSchema)
     @responseHandler
+    @blp.response(201, ItemSchema)
     def post(self, request_data):
-        if(request_data["store_id"] not in stores):
-            raise KeyError()
-        
-        id = len(items) + 1 
-        new_item = {**request_data, "id": id}
-        items[id] = new_item
-        return new_item
-
-
-
+        item = ItemModel(**request_data) 
+        db.session.add(item)
+        db.session.commit()
+        return item
+    
+    
 
 @blp.route("/items/<int:id>")
 class Item(MethodView):
