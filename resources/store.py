@@ -3,6 +3,7 @@ from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from db import stores, items
 from helpers import responseHandler
+from schemas import StoreSchema, StoreUpdateSchema
 
 
 # flask_smorest Blueprint is used to divide API into multiple segments
@@ -16,22 +17,14 @@ class StoreList(MethodView):
     def get(self):
          return list(stores.values())
 
+    @blp.arguments(StoreSchema)
     @responseHandler
-    def post(self):
-        request_data = request.get_json()
+    def post(self, request_data):
         id = len(stores) + 1 
         new_item = {**request_data, "id": id }
         stores[id] = new_item
         return new_item
     
-    @responseHandler
-    def put(self, id):
-        request_data = request.get_json()
-        id = len(stores) + 1 
-        new_item = {**request_data, "id": id }
-        stores[id] = new_item
-        return new_item
-
 
 @blp.route("/stores/<int:id>")
 
@@ -46,8 +39,10 @@ class Store(MethodView):
         del stores[id]
         return True
     
+
+    @blp.arguments(StoreUpdateSchema)
     @responseHandler
-    def put(self, id):
+    def put(self, request_data, id):
         request_data = request.get_json()
         match = stores[id]
         print(match)
