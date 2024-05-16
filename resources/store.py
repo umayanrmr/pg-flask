@@ -1,4 +1,3 @@
-from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from models.item import ItemModel
@@ -6,6 +5,7 @@ from models.store import StoreModel
 from schemas import ItemSchema, StoreSchema, StoreUpdateSchema
 from db import db
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from flask_jwt_extended import jwt_required
 
 
 # flask_smorest Blueprint is used to divide API into multiple segments
@@ -15,10 +15,13 @@ blp = Blueprint("Stores", "stores", __name__, description="Stores API")
 
 @blp.route("/stores")
 class StoreList(MethodView):
+    @jwt_required()
     @blp.response(200, StoreSchema(many=True))
     def get(self):
          return StoreModel.query.all()
 
+
+    @jwt_required()
     @blp.arguments(StoreSchema)
     @blp.response(201, ItemSchema)
     def post(self, request_data):
@@ -35,17 +38,21 @@ class StoreList(MethodView):
 
 @blp.route("/stores/<int:id>")
 class Store(MethodView):
+    @jwt_required()
     @blp.response(200, StoreSchema)
     def get(self, id):
         item = StoreModel.query.get_or_404(id)
         return item
 
+
+    @jwt_required()
     def delete(self, id):
         item = StoreModel.query.get_or_404(id)
         db.session.delete(item)
         db.session.commit()
         return {"message": "Item Deleted."}, 200
     
+    @jwt_required()
     @blp.arguments(StoreUpdateSchema)
     @blp.response(200, StoreSchema)
     def put(self, request_data, id):
@@ -58,6 +65,7 @@ class Store(MethodView):
 
 @blp.route("/stores/<int:id>/items")
 class StoreItems(MethodView):
+    @jwt_required()
     @blp.response(200, ItemSchema(many=True))
     def get(self, id):
         return ItemModel.query.filter(ItemModel.store_id == id).all()

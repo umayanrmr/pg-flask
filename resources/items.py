@@ -1,5 +1,6 @@
 from flask import request
 from flask.views import MethodView
+from flask_jwt_extended import jwt_required
 from flask_smorest import Blueprint, abort
 from models.item import ItemModel
 from schemas import ItemSchema, ItemUpdateSchema
@@ -13,10 +14,12 @@ blp = Blueprint("Items", "items", __name__, description="Items API")
 
 @blp.route("/items")
 class ItemList(MethodView):
+    @jwt_required()
     @blp.response(200, ItemSchema(many=True))
     def get(self):
          return ItemModel.query.all()
 
+    @jwt_required()
     @blp.arguments(ItemSchema)
     @blp.response(201, ItemSchema)
     def post(self, request_data):
@@ -32,18 +35,19 @@ class ItemList(MethodView):
 
 @blp.route("/items/<int:id>")
 class Item(MethodView):
-
+    @jwt_required()
     @blp.response(200,ItemSchema)
     def get(self, id):
         item = ItemModel.query.get_or_404(id)
         return item
-    
+    @jwt_required()
     def delete(self, id):
         item = ItemModel.query.get_or_404(id)
         db.session.delete(item)
         db.session.commit()
         return {"message": "Item Deleted."}, 200
     
+    @jwt_required()
     @blp.arguments(ItemUpdateSchema)
     @blp.response(200, ItemSchema)
     def put(self, request_data, id):
