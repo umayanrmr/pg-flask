@@ -7,7 +7,7 @@ from db import db
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from passlib.hash import pbkdf2_sha256
 
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, get_jwt
 
 
 # flask_smorest Blueprint is used to divide API into multiple segments
@@ -18,6 +18,12 @@ blp = Blueprint("Users","users", __name__, description="User API")
 class Users(MethodView):
     @blp.response(200, UserSchema(many=True))
     def get(self):
+         jwt = get_jwt()
+         
+         if not jwt.get("role") == "Jesus":
+            abort(401, message="Jesus priviledge required")
+
+
          return UserModel.query.all()
 
     @blp.arguments(UserSchema)
