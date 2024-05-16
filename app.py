@@ -1,5 +1,6 @@
 import os
 from flask import Flask, jsonify
+from flask_migrate import Migrate
 from flask_smorest import Api
 
 from db import db
@@ -37,6 +38,9 @@ def create_app(db_url=None):
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["PROPAGATE_EXCEPTIONS"] = True
     db.init_app(app)
+
+
+    migrate = Migrate(app, db)
     api = Api(app)
 
 
@@ -86,8 +90,8 @@ def create_app(db_url=None):
 
 
 
-    with app.app_context():
-        db.create_all()
+    # with app.app_context():
+    #     db.create_all()
 
    
     api.register_blueprint(ItemBlueprint)
