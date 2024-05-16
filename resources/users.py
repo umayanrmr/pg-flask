@@ -7,6 +7,8 @@ from db import db
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from passlib.hash import pbkdf2_sha256
 
+from flask_jwt_extended import create_access_token
+
 
 # flask_smorest Blueprint is used to divide API into multiple segments
 blp = Blueprint("Users","users", __name__, description="User API")
@@ -53,3 +55,23 @@ class User(MethodView):
     #     db.session.commit()
     #     return item
 
+
+
+
+
+@blp.route("/login")
+class Login(MethodView):
+    @blp.arguments(UserSchema)
+    def post(self,request_data):
+
+        user = UserModel.query.filter(UserModel.username == request_data["username"]).first()
+        if user == None:
+            abort(401, message="Could not find user")
+        
+        if pbkdf2_sha256.verify(request_data["password"], user.password) == False:
+            abort(401, message="Invalid credentials")
+
+        access_token = create_access_token(identity=user.id)
+        return { "access_token": access_token }
+
+        
