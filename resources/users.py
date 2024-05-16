@@ -1,13 +1,14 @@
 from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
+from blocklist import BLOCKLIST
 from models.user import UserModel
 from schemas import UserSchema
 from db import db
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from passlib.hash import pbkdf2_sha256
 
-from flask_jwt_extended import create_access_token, get_jwt
+from flask_jwt_extended import create_access_token, get_jwt, jwt_required
 
 
 # flask_smorest Blueprint is used to divide API into multiple segments
@@ -19,7 +20,7 @@ class Users(MethodView):
     @blp.response(200, UserSchema(many=True))
     def get(self):
          jwt = get_jwt()
-         
+
          if not jwt.get("role") == "Jesus":
             abort(401, message="Jesus priviledge required")
 
@@ -79,5 +80,14 @@ class Login(MethodView):
 
         access_token = create_access_token(identity=user.id)
         return { "access_token": access_token }
+
+        
+@blp.route("/logout")
+class Logout(MethodView):
+    @jwt_required()
+    def post(self):
+        jti = get_jwt()["jti"]
+        BLOCKLIST.add(jti)
+        return { "message": "Successfully logged out" }, 200
 
         
