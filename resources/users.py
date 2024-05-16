@@ -8,7 +8,7 @@ from db import db
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from passlib.hash import pbkdf2_sha256
 
-from flask_jwt_extended import create_access_token, get_jwt, jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, get_jwt, jwt_required
 
 
 # flask_smorest Blueprint is used to divide API into multiple segments
@@ -47,6 +47,8 @@ class User(MethodView):
     def get(self, id):
          return UserModel.query.get_or_404(id)
     
+
+    @jwt_required(fresh=True) # every destructive URL must require a fresh=True token
     def delete(self, id):
         item = UserModel.query.get_or_404(id)
         db.session.delete(item)
@@ -78,8 +80,9 @@ class Login(MethodView):
         if pbkdf2_sha256.verify(request_data["password"], user.password) == False:
             abort(401, message="Invalid credentials")
 
-        access_token = create_access_token(identity=user.id)
-        return { "access_token": access_token }
+        access_token = create_access_token(identity=user.id, fresh=True)
+        refresh_token = create_refresh_token(identity=user.id)
+        return { "access_token": access_token, "refresh_token": refresh_token }
 
         
 @blp.route("/logout")
@@ -89,5 +92,24 @@ class Logout(MethodView):
         jti = get_jwt()["jti"]
         BLOCKLIST.add(jti)
         return { "message": "Successfully logged out" }, 200
+
+
+
+@blp.route("/refresh")
+class Refresh(MethodView):
+    # refresh=True tells python that it needs refresh token, not access token
+    @jwt_required(refresh=True)
+    def post(self):
+        current_user = get_jwt_identity() # or get_jwt().get("sub")
+
+
+        # add refresh to the blocklist so it cant be used again
+        jti = get_jwt()["jti"]
+        BLOCKLIST.add(jti)
+
+        new_token = create_access_token(identity=current_user, fresh=False)
+        refresh_token = create_refresh_token(identity=current_user)
+        return { "access_token": new_token, "refresh_token": refresh_token }
+
 
         

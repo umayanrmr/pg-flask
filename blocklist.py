@@ -6,5 +6,5 @@ app and the logout resource so that tokens can be added to the blocklist when th
 user logs out.
 
 """
-
+# should be moved to the database
 BLOCKLIST = set()

@@ -42,11 +42,17 @@ def create_app(db_url=None):
 
     app.config["JWT_SECRET_KEY"] = "1b9795864d205ff97886a860fb03164b"
     jwt = JWTManager(app)
+
+
+    # this function will be called everytime that a route with that requires FRESH TOKEN receives a NON FRESH Token
+    @jwt.needs_fresh_token_loader
+    def token_not_fresh_callback(jwt_header, jwt_payload):
+        return (jsonify({"message": "This action requires a fresh token.", "error": "token_fresh_required"}),401)
     
 
     # this function will be called everytime that the app receives a token
     @jwt.token_in_blocklist_loader
-    def check_if_token_in_blocklist(jwt_header, jwt_payload):
+    def check_if_token_in_blocklist_callback(jwt_header, jwt_payload):
         return jwt_payload["jti"] in BLOCKLIST
 
     # this function will be called everytime that a jwt is revoked, in short if the token_in_blocklist_loader returns true, this will run
