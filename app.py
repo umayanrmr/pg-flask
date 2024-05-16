@@ -5,6 +5,10 @@ from flask_smorest import Api
 from db import db
 import models
 
+from flask_jwt_extended import JWTManager
+
+
+
 from resources.items import blp as ItemBlueprint
 from resources.store import blp as StoreBlueprint
 from resources.tags import blp as TagsBlueprint
@@ -30,6 +34,10 @@ def create_app(db_url=None):
     app.config["PROPAGATE_EXCEPTIONS"] = True
     db.init_app(app)
     api = Api(app)
+
+
+    app.config["JWT_SECRET_KEY"] = "1b9795864d205ff97886a860fb03164b"
+    jwt = JWTManager(app)
 
     with app.app_context():
         db.create_all()
