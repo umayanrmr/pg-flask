@@ -21,17 +21,16 @@ class Users(MethodView):
     @blp.arguments(UserSchema)
     @blp.response(201, UserSchema)
     def post(self, request_data):
-        item = UserModel(**request_data)
-        try:
-            db.session.add(item)
-            db.session.commit()
-        except IntegrityError:
-            abort(400, message="Username name already exists.")
-        except SQLAlchemyError: 
-            abort(500, message="An error occured while inserting the item")
+        if UserModel.query.filter(UserModel.username == request_data["username"]).first():
+            abort(409, message="A user with that username already exists.")
+        item = UserModel(
+            username=request_data["username"],
+            password=pbkdf2_sha256.hash(request_data["password"])
+        )  
+        db.session.add(item)
+        db.session.commit()
         return item
     
-
 
 @blp.route("/users/<int:id>")
 class User(MethodView):
