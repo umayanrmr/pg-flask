@@ -9,6 +9,7 @@ from flask_jwt_extended import JWTManager
 
 
 
+from models.user import UserModel
 from resources.items import blp as ItemBlueprint
 from resources.store import blp as StoreBlueprint
 from resources.tags import blp as TagsBlueprint
@@ -54,6 +55,19 @@ def create_app(db_url=None):
     @jwt.unauthorized_loader
     def missing_token_callback(error):
         return (jsonify({"description": "Request does not contain an access token.","error": "authorization_required"}),401)
+    
+
+    # this function will be called anytime flask_jwt_extended.create_access_token is called
+
+    @jwt.additional_claims_loader
+    def add_claims_to_jwt(identity): # identity is the id of the user, create_access_token(identity=user.id)
+        user = UserModel.query.filter(UserModel.id == identity).first()
+
+        # you can add role here
+        return { "is_admin": True, "role": "Jesus" }
+        # print(user)
+
+
 
     with app.app_context():
         db.create_all()
